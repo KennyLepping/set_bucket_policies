@@ -17,13 +17,17 @@ def retrieve_bucket_policies(bucket: str):
 def set_bucket_policy(bucket: str):
     bucket_name = bucket
     bucket_policy = {
-        'Version': '2012-10-17',
-        'Statement': [{
-            'Sid': 'AddPerm',
-            'Effect': 'Allow',
-            'Principal': '*',
-            'Action': ['s3:GetObject'],
-            'Resource': f'arn:aws:s3:::{bucket_name}/*'
+        "Version": "2012-10-17",
+        "Statement": [{
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": {"AWS": "*"},
+            "Action": "s3:*",
+            "Resource":
+                [
+                    f"arn:aws:s3:::{bucket_name}",
+                    f"arn:aws:s3:::{bucket_name}/*"
+                ]
         }]
     }
 
