@@ -56,3 +56,6 @@ def change_valid_bucket_policies():
             set_bucket_policy(bucket.name)
             # s3_delete.delete_bucket_policy(Bucket=bucket.name)
             print(f"{bucket_name}'s policy has been changed to your new policy.")
+
+
+

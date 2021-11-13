@@ -6,7 +6,7 @@ all folders from C:\Users\kenny\.aws
 
 And then log in again with aws configure
 
-
+https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 
 
 {
@@ -20,3 +20,12 @@ And then log in again with aws configure
         }]
     }
 
+
+How to run this project:
+pip install Pipenv
+
+pipenv shell
+
+pip freeze > requirements.txt
+
+py main.py
