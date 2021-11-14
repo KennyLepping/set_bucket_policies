@@ -21,6 +21,11 @@ def change_bucket_policy(bucket: str):
     bucket_name = bucket
     bucket_policy = BucketPolicy(serviceModule=s3_client, resourceIdentifer=bucket_name)
 
+    if bucket_policy.content.get('Id') is not None:
+        bucket_id = bucket_policy.content.get('Id')
+    else:
+        bucket_id = None
+
     bucket_version = bucket_policy.content.get('Version')
     new_dict_for_sid = bucket_policy.content.get('Statement')[0]
 
@@ -41,12 +46,21 @@ def change_bucket_policy(bucket: str):
 
     new_bucket_policy.update(s3_condition)
 
-    bucket_policy = {
-        "Version": bucket_version,
-        "Statement": [
-            new_bucket_policy
-        ]
-    }
+    if bucket_id is not None:
+        bucket_policy = {
+            "Version": bucket_version,
+            "Id": bucket_id,
+            "Statement": [
+                new_bucket_policy
+            ]
+        }
+    else:
+        bucket_policy = {
+            "Version": bucket_version,
+            "Statement": [
+                new_bucket_policy
+            ]
+        }
 
     # Convert the policy from JSON dict to string
     bucket_policy = json.dumps(bucket_policy)
@@ -78,10 +92,10 @@ def change_valid_bucket_policies():
 
 
 # USE WITH CATUTION! This function updates the bucket policy of all buckets in the account.
+# This is also untested, but change_bucket_policy() does work on my simple bucket policies
 def change_all_bucket_policies():
     s3 = boto3.resource('s3')
     s3_delete = boto3.client('s3')
     for bucket in s3.buckets.all():
         change_bucket_policy(bucket.name)
         print(f"{bucket.name}'s policy has been changed to your new policy.")
-
