@@ -1,4 +1,4 @@
-from utils import change_valid_bucket_policies
+from utils import change_valid_bucket_policies, change_bucket_policy, change_all_bucket_policies
 
 
 def main():

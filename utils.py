@@ -15,7 +15,27 @@ def retrieve_bucket_policies(bucket: str):
     print(result['Policy'])
 
 
-# def set_bucket_policy(bucket: str, new_bucket_policy):
+# This is for my machine for testing puposes
+def change_valid_bucket_policies():
+    s3 = boto3.resource('s3')
+    s3_client = boto3.client('s3')
+    for bucket in s3.buckets.all():
+        bucket_name = str(bucket.name)
+        numbers_counter = 0
+        for index in range(len(bucket_name)):
+            if bucket_name[index].isdigit():
+                numbers_counter += 1
+            else:
+                break
+
+        if numbers_counter >= 6:
+            # set_bucket_policy(bucket.name)
+            # s3_delete.delete_bucket_policy(Bucket=bucket.name)
+            change_bucket_policy(bucket.name)
+
+            print(f"{bucket_name}'s policy has been changed to your new policy.")
+
+
 def change_bucket_policy(bucket: str):
     s3_client = boto3.client('s3')
     bucket_name = bucket
@@ -68,27 +88,6 @@ def change_bucket_policy(bucket: str):
     # Set the new policy
     s3 = boto3.client('s3')
     s3.put_bucket_policy(Bucket=bucket_name, Policy=bucket_policy)
-
-
-# AWS Account IDs: https://docs.aws.amazon.com/general/latest/gr/acct-identifiers.html
-def change_valid_bucket_policies():
-    s3 = boto3.resource('s3')
-    s3_client = boto3.client('s3')
-    for bucket in s3.buckets.all():
-        bucket_name = str(bucket.name)
-        numbers_counter = 0
-        for index in range(len(bucket_name)):
-            if bucket_name[index].isdigit():
-                numbers_counter += 1
-            else:
-                break
-
-        if numbers_counter >= 6:
-            # set_bucket_policy(bucket.name)
-            # s3_delete.delete_bucket_policy(Bucket=bucket.name)
-            change_bucket_policy(bucket.name)
-
-            print(f"{bucket_name}'s policy has been changed to your new policy.")
 
 
 # USE WITH CATUTION! This function updates the bucket policy of all buckets in the account.
