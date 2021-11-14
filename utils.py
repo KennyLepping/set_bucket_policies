@@ -1,5 +1,6 @@
 import boto3
 import json
+from awspolicy import BucketPolicy
 
 
 def print_buckets():
@@ -14,21 +15,37 @@ def retrieve_bucket_policies(bucket: str):
     print(result['Policy'])
 
 
-def set_bucket_policy(bucket: str):
+# def set_bucket_policy(bucket: str, new_bucket_policy):
+def change_bucket_policy(bucket: str):
+    s3_client = boto3.client('s3')
     bucket_name = bucket
+    bucket_policy = BucketPolicy(serviceModule=s3_client, resourceIdentifer=bucket_name)
+
+    bucket_version = bucket_policy.content.get('Version')
+    new_dict_for_sid = bucket_policy.content.get('Statement')[0]
+
+    # I have to get the bucket statement based on it's name
+    statement_to_modify = bucket_policy.select_statement(new_dict_for_sid.get('Sid'))
+
+    # Assign new values here and then save the statement
+    statement_to_modify.Sid = "ForceSSL"
+    statement_to_modify.Effect = "Deny"
+    statement_to_modify.Principal = "*"
+    statement_to_modify.Resource = f"arn:aws:s3:::{bucket_name}/*"
+    statement_to_modify.save()
+
+    with open('s3_condition.json') as json_file:
+        s3_condition = json.load(json_file)
+
+    new_bucket_policy = statement_to_modify.content
+
+    new_bucket_policy.update(s3_condition)
+
     bucket_policy = {
-        "Version": "2012-10-17",
-        "Statement": [{
-            "Sid": "PublicReadGetObject",
-            "Effect": "Allow",
-            "Principal": {"AWS": "*"},
-            "Action": "s3:*",
-            "Resource":
-                [
-                    f"arn:aws:s3:::{bucket_name}",
-                    f"arn:aws:s3:::{bucket_name}/*"
-                ]
-        }]
+        "Version": bucket_version,
+        "Statement": [
+            new_bucket_policy
+        ]
     }
 
     # Convert the policy from JSON dict to string
@@ -42,7 +59,7 @@ def set_bucket_policy(bucket: str):
 # AWS Account IDs: https://docs.aws.amazon.com/general/latest/gr/acct-identifiers.html
 def change_valid_bucket_policies():
     s3 = boto3.resource('s3')
-    s3_delete = boto3.client('s3')
+    s3_client = boto3.client('s3')
     for bucket in s3.buckets.all():
         bucket_name = str(bucket.name)
         numbers_counter = 0
@@ -53,9 +70,18 @@ def change_valid_bucket_policies():
                 break
 
         if numbers_counter >= 6:
-            set_bucket_policy(bucket.name)
+            # set_bucket_policy(bucket.name)
             # s3_delete.delete_bucket_policy(Bucket=bucket.name)
+            change_bucket_policy(bucket.name)
+
             print(f"{bucket_name}'s policy has been changed to your new policy.")
 
 
+# USE WITH CATUTION! This function updates the bucket policy of all buckets in the account.
+def change_all_bucket_policies():
+    s3 = boto3.resource('s3')
+    s3_delete = boto3.client('s3')
+    for bucket in s3.buckets.all():
+        change_bucket_policy(bucket.name)
+        print(f"{bucket.name}'s policy has been changed to your new policy.")
 

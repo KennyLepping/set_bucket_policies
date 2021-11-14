@@ -26,6 +26,25 @@ pip install Pipenv
 
 pipenv shell
 
-pip freeze > requirements.txt
+pip install -r requirements.txt
 
 py main.py
+
+Updating seems to be possible with this package:
+https://stackoverflow.com/questions/34898335/amazon-s3-modify-bucket-policy-using-boto-boto3
+
+TODO: Update policy instead create a new one
+
+
+Update Everything but append Condition:
+
+Sid: ForceSSL
+Effect: Deny
+Principal: *
+Action: s3:* - stays the same
+Resource: "arn:aws:s3::BUCKETNAME/*",
+"Condition": {
+    "Bool": {
+        "aws:SecureTransport": "false"
+    }
+}
